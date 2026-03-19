@@ -53,33 +53,55 @@
             </Grid.RowDefinitions>
 
             <Viewbox Grid.Row="0" Stretch="Uniform">
-                <Border Width="352"
-                        Height="242"
-                        Background="White"
-                        BorderBrush="Black"
-                        BorderThickness="1"
-                        CornerRadius="8">
+                <Border Width="352" Height="200" Background="White" BorderBrush="Black" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
                     <Grid>
-                        <Image Name="ImgBackground"
-                               Stretch="UniformToFill"
-                               Source="https://via.placeholder.com/352x242"/>
+                        <Image Stretch="UniformToFill" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center"
+                   Source="{Binding GeneratedImageBitmap}"/>
 
-                        <StackPanel VerticalAlignment="Top"
-                                    Background="#EFFFFFFF">
+                        <Border Background="Transparent" 
+                    CornerRadius="4" 
+                    Margin="20,0,20,0" 
+                    Padding="10,0,10,10" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center"
+                    MaxWidth="320">
 
-                            <TextBlock Text="{Binding ProductName}"
-                                       FontSize="16"
-                                       FontWeight="Bold"
-                                       TextAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,0,5"/>
+                            <StackPanel>
+                                <TextBlock Text="{Binding ProductName}"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,0" />
 
-                            <TextBlock Text="{Binding Ingredients}"
-                                       FontSize="10"
-                                       TextAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       MaxHeight="80"/>
-                        </StackPanel>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="15" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Producent:" FontSize="10" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding Producer}" FontSize="10" TextAlignment="Center" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Składniki:" FontSize="10" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding Ingredients}" FontSize="10" TextAlignment="Center" TextWrapping="Wrap" MaxHeight="60"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="{Binding Description}"
+                               FontSize="10"
+                               FontStyle="Italic"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               MaxHeight="100" />
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
             </Viewbox>
@@ -129,7 +151,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Content="Generuj tło" Command="{Binding GenerateAiImageCommand}" Style="{StaticResource MainButton}" Margin="0,0,5,0"/>
-                        <Button Grid.Column="1" Content="Usuń tło" Style="{StaticResource MainButton}" Background="#C83232" Margin="5,0,0,0"/>
+                        <Button Grid.Column="1" Content="Usuń tło" Command="{Binding ProbaCommand}" Style="{StaticResource MainButton}" Background="#C83232" Margin="5,0,0,0"/>
                     </Grid>
 
                     <Expander Header="Pokaż więcej opcji" Margin="0,15,0,0" FontWeight="SemiBold">

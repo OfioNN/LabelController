@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace LabelController.ViewModel {
     partial class MainViewModel : ObservableObject {
@@ -22,10 +24,13 @@ namespace LabelController.ViewModel {
         private string _ingredients = string.Empty;
 
         [ObservableProperty]
-        private string _producer = "Lorem ipsum";
+        private ImageSource? _generatedImageBitmap;
 
         [ObservableProperty]
-        private string _description = "Lorem ipsum";
+        private string _producer = "XYZ \n ul.XYZ \nXYZ";
+
+        [ObservableProperty]
+        private string _description = "Data minimalnej trwałości jest jednocześnie nr partii. \nNajlepiej spożyć przed:..................................... \nNależy przechowywać w temperaturze od 0 do 20 w zaciemnionym miejscu. \nPo otwarciu opakowania produkt przechowywać w lodówce, spożyć w ciągu 48 godz.";
 
         [ObservableProperty]
         private string _aiPrompt = string.Empty;
@@ -66,6 +71,58 @@ namespace LabelController.ViewModel {
             MessageBox.Show($"Etykieta '{ProductName}' została poprawnie zapisana!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        [RelayCommand]
+        private async Task GenerateAiImage() {
+            if (string.IsNullOrWhiteSpace(ProductName)) {
+                MessageBox.Show("Podaj nazwę produktu przed zapisem!", "Błąd", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string prompt = IsSameAsIngredients ? Ingredients : AiPrompt;
+            string key = GetApiKey();
+            if (string.IsNullOrWhiteSpace(prompt) || string.IsNullOrEmpty(key)) return;
+
+            string improvedPrompt = $"Minimalist vector corner illustration of {prompt}. Placed strictly in the corners. Pure white background. Huge empty negative space in the exact center for text. Flat design, clean lines, simple, no extra details, no clutter.";
+
+            string json = $$"""
+                {
+                  "contents": [
+                    {
+                      "parts": [
+                        { "text": "{{improvedPrompt}}" }
+                      ]
+                    }
+                  ]
+                }
+                """;
+
+            string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key={key}";
+
+            try {
+                var response = await _httpClient.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
+
+                var node = JsonNode.Parse(await response.Content.ReadAsStringAsync());
+                string? base64 = node?["candidates"]?[0]?["content"]?["parts"]?[0]?["inlineData"]?["data"]?.ToString();
+
+                if (!string.IsNullOrEmpty(base64)) {
+                    string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedImages", $"{ProductName}-{DateTime.Now:yyyyMMddHHmmss}.png");
+                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                    await File.WriteAllBytesAsync(path, Convert.FromBase64String(base64));
+
+                    GeneratedImageBitmap = LoadBitmapImageFromPath(path);
+                }
+            }
+            catch (Exception ex) {
+                MessageBox.Show($"Błąd: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private async Task Proba() {
+            GeneratedImageBitmap = LoadBitmapImageFromPath(@"X:\VS Code\C#\LabelController\bin\Debug\net8.0-windows\GeneratedImages\Zupa-20260319212929.png");
+        }
+
+
         private string GetApiKey() {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -76,32 +133,18 @@ namespace LabelController.ViewModel {
         }
 
 
-        [RelayCommand]
-        private async Task GenerateAiImage() {
-            string prompt = IsSameAsIngredients ? Ingredients : AiPrompt;
-            string key = GetApiKey();
-            if (string.IsNullOrWhiteSpace(prompt) || string.IsNullOrEmpty(key)) return;
+        private BitmapImage LoadBitmapImageFromPath(string path) {
+            
+            var bitmap = new BitmapImage();
+            
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.UriSource = new Uri(path, UriKind.Absolute);
+            bitmap.EndInit();
 
-            string json = $$"""{"contents":[{"parts":[{"text":"Wygeneruj mi tło do etykiety: {{prompt}}. tło białe, środek pusty, dane tylko w rogach."}]}]}""";
-            string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key={key}";
+            bitmap.Freeze();
 
-            try {
-                var response = await _httpClient.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
-
-                var node = JsonNode.Parse(await response.Content.ReadAsStringAsync());
-                string? base64 = node?["candidates"]?[0]?["content"]?["parts"]?[0]?["inlineData"]?["data"]?.ToString();
-
-                if (!string.IsNullOrEmpty(base64)) {
-                    string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedImages", $"label_{Guid.NewGuid()}.png");
-                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-                    await File.WriteAllBytesAsync(path, Convert.FromBase64String(base64));
-
-                    // GeneratedImageBitmap = LoadBitmapImageFromPath(path);
-                }
-            }
-            catch (Exception ex) {
-                MessageBox.Show($"Błąd: {ex.Message}");
-            }
+            return bitmap;
         }
     }
 }
