@@ -7,6 +7,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows;
 
 namespace LabelController.ViewModel {
@@ -30,11 +31,11 @@ namespace LabelController.ViewModel {
         private string _aiPrompt = string.Empty;
 
         [ObservableProperty]
-        private bool _isSameAsIngredients = false;
+        private bool _isSameAsIngredients = true;
 
         public MainViewModel() {
             using (var db = new AppDbContext()) {
-                db.Database.EnsureCreated(); 
+                db.Database.EnsureCreated();
             }
         }
 
@@ -77,73 +78,32 @@ namespace LabelController.ViewModel {
 
         [RelayCommand]
         private async Task GenerateAiImage() {
-            string finalPrompt = IsSameAsIngredients ? Ingredients : AiPrompt;
-            if (string.IsNullOrWhiteSpace(finalPrompt)) return;
+            string prompt = IsSameAsIngredients ? Ingredients : AiPrompt;
+            string key = GetApiKey();
+            if (string.IsNullOrWhiteSpace(prompt) || string.IsNullOrEmpty(key)) return;
 
-            string apiKey = GetApiKey();
-            if (string.IsNullOrEmpty(apiKey)) {
-                MessageBox.Show("Nie znaleziono klucza API w appsettings.json!");
-                return;
-            }
-
-            string url = $"https://generativelanguage.googleapis.com/v1beta/models/imagen-3:predict?key={apiKey}";
+            string json = $$"""{"contents":[{"parts":[{"text":"Wygeneruj mi tło do etykiety: {{prompt}}. tło białe, środek pusty, dane tylko w rogach."}]}]}""";
+            string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key={key}";
 
             try {
-                // 1. Przygotowanie żądania (Payload)
-                var payload = new {
-                    instances = new[] {
-                new { prompt = finalPrompt }
-            },
-                    parameters = new {
-                        sampleCount = 1,
-                        aspectRatio = "1:1" // Możesz zmienić na "4:3" lub "16:9"
-                    }
-                };
+                var response = await _httpClient.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
 
-                string jsonPayload = JsonSerializer.Serialize(payload);
-                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                var node = JsonNode.Parse(await response.Content.ReadAsStringAsync());
+                string? base64 = node?["candidates"]?[0]?["content"]?["parts"]?[0]?["inlineData"]?["data"]?.ToString();
 
-                // 2. Wysyłka do Google
-                var response = await _httpClient.PostAsync(url, content);
+                if (!string.IsNullOrEmpty(base64)) {
+                    string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedImages", $"label_{Guid.NewGuid()}.png");
+                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                    await File.WriteAllBytesAsync(path, Convert.FromBase64String(base64));
 
-                if (!response.IsSuccessStatusCode) {
-                    string errorLog = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show($"Błąd API Google ({response.StatusCode}): {errorLog}");
-                    return;
-                }
-
-                // 3. Odczytanie odpowiedzi
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ImagenResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (result?.Predictions != null && result.Predictions.Count > 0) {
-                    // Dekodujemy Base64 z powrotem na bajty obrazu
-                    byte[] imageBytes = Convert.FromBase64String(result.Predictions[0].BytesBase64);
-
-                    // 4. Zapis lokalny
-                    string fileName = $"label_{Guid.NewGuid()}.png";
-                    string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedImages", fileName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-
-                    await File.WriteAllBytesAsync(fullPath, imageBytes);
-
-                    // 5. Odświeżenie UI
-                    //GeneratedImageBitmap = LoadBitmapImageFromPath(fullPath);
-                    //_generatedLocalImagePath = fullPath;
+                    // GeneratedImageBitmap = LoadBitmapImageFromPath(path);
                 }
             }
             catch (Exception ex) {
-                MessageBox.Show($"Błąd połączenia: {ex.Message}");
+                MessageBox.Show($"Błąd: {ex.Message}");
             }
         }
-
-    }
-    public class ImagenResponse {
-        public List<ImagenPrediction> Predictions { get; set; } = new();
-    }
-
-    public class ImagenPrediction {
-        public string BytesBase64 { get; set; } = string.Empty;
-        public string MimeType { get; set; } = "image/png";
     }
 }
+
+

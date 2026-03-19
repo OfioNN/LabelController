@@ -128,7 +128,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="Generuj tło" Style="{StaticResource MainButton}" Margin="0,0,5,0"/>
+                        <Button Grid.Column="0" Content="Generuj tło" Command="{Binding GenerateAiImageCommand}" Style="{StaticResource MainButton}" Margin="0,0,5,0"/>
                         <Button Grid.Column="1" Content="Usuń tło" Style="{StaticResource MainButton}" Background="#C83232" Margin="5,0,0,0"/>
                     </Grid>
 
