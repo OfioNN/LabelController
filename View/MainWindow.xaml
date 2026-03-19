@@ -38,6 +38,38 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="#9CA3AF"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="#2563EB"/>
+                                <Setter Property="BorderThickness" TargetName="border" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="20">
@@ -53,62 +85,58 @@
             </Grid.RowDefinitions>
 
             <Viewbox Grid.Row="0" Stretch="Uniform">
-                <Border Width="352" Height="200" Background="White" BorderBrush="Black" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
-                    <Grid>
-                        <Image Stretch="UniformToFill" 
-                   HorizontalAlignment="Center" 
-                   VerticalAlignment="Center"
-                   Source="{Binding GeneratedImageBitmap}"/>
+                <Border Width="352" Height="200" BorderBrush="Black" BorderThickness="1" CornerRadius="6">
+                    <Border.Background>
+                        <ImageBrush ImageSource="{Binding GeneratedImageBitmap}" Stretch="UniformToFill" />
+                    </Border.Background>
 
-                        <Border Background="Transparent" 
-                    CornerRadius="4" 
-                    Margin="20,0,20,0" 
-                    Padding="10,0,10,10" 
-                    VerticalAlignment="Center" 
-                    HorizontalAlignment="Center"
-                    MaxWidth="320">
+                    <Border Background="Transparent" 
+                            CornerRadius="4" 
+                            Margin="20,0,20,0" 
+                            Padding="10,0,10,10" 
+                            VerticalAlignment="Center" 
+                            HorizontalAlignment="Center"
+                            MaxWidth="320">
 
-                            <StackPanel>
-                                <TextBlock Text="{Binding ProductName}"
-                               FontSize="14"
-                               FontWeight="Bold"
-                               TextAlignment="Center"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,0" />
+                        <StackPanel>
+                            <TextBlock Text="{Binding ProductName}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,0" />
 
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="15" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="15" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
 
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Producent:" FontSize="10" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,2"/>
-                                        <TextBlock Text="{Binding Producer}" FontSize="10" TextAlignment="Center" TextWrapping="Wrap"/>
-                                    </StackPanel>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Producent:" FontSize="10" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,2"/>
+                                    <TextBlock Text="{Binding Producer}" FontSize="10" TextAlignment="Center" TextWrapping="Wrap"/>
+                                </StackPanel>
 
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Składniki:" FontSize="10" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,2"/>
-                                        <TextBlock Text="{Binding Ingredients}" FontSize="10" TextAlignment="Center" TextWrapping="Wrap" MaxHeight="60"/>
-                                    </StackPanel>
-                                </Grid>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Składniki:" FontSize="10" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,2"/>
+                                    <TextBlock Text="{Binding Ingredients}" FontSize="10" TextAlignment="Center" TextWrapping="Wrap" MaxHeight="60"/>
+                                </StackPanel>
+                            </Grid>
 
-                                <TextBlock Text="{Binding Description}"
-                               FontSize="10"
-                               FontStyle="Italic"
-                               TextAlignment="Center"
-                               TextWrapping="Wrap"
-                               MaxHeight="100" />
-                            </StackPanel>
-                        </Border>
-                    </Grid>
+                            <TextBlock Text="{Binding Description}"
+                                       FontSize="10"
+                                       FontStyle="Italic"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       MaxHeight="100" />
+                        </StackPanel>
+                    </Border>
                 </Border>
             </Viewbox>
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,15,0,0">
                 <Button Content="Wróć" Width="120" Margin="0,0,10,0" Style="{StaticResource MainButton}" Background="#202020"/>
-
                 <Button Width="100" Style="{StaticResource MainButton}" Background="#DC2626">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <iconPacks:PackIconMaterial Kind="TrashCan" Foreground="White" Width="14" Height="14"/>
@@ -126,24 +154,28 @@
 
             <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
                 <StackPanel>
-                    <TextBlock Text="Nazwa produktu"/>
+                    <TextBlock Text="Nazwa produktu" Foreground="#4B5563" FontWeight="SemiBold" Margin="0,0,0,2"/>
                     <TextBox Text="{Binding ProductName, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource ModernTextBox}"
                              Height="35"
-                             Margin="0,5,0,10"/>
+                             Margin="0,0,0,15"/>
 
-                    <TextBlock Text="Składniki"/>
+                    <TextBlock Text="Składniki" Foreground="#4B5563" FontWeight="SemiBold" Margin="0,0,0,2"/>
                     <TextBox Text="{Binding Ingredients, UpdateSourceTrigger=PropertyChanged}"
-                             Height="100"
+                             Style="{StaticResource ModernTextBox}"
+                             VerticalContentAlignment="Top"
+                             Height="75"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
-                             Margin="0,5,0,10"/>
+                             Margin="0,0,0,15"/>
 
-                    <TextBlock Text="Co ma się znajdować w tle?"/>
+                    <TextBlock Text="Co ma się znajdować w tle?" Foreground="#4B5563" FontWeight="SemiBold" Margin="0,0,0,2"/>
                     <CheckBox Content="To samo co w składnikach"
-                              Margin="0,5"/>
+                              Margin="0,2,0,8"/>
                     <TextBox x:Name="TxtAiPrompt"
+                             Style="{StaticResource ModernTextBox}"
                              Height="35"
-                             Margin="0,5,0,10"/>
+                             Margin="0,0,0,15"/>
 
                     <Grid Margin="0,5,0,0">
                         <Grid.ColumnDefinitions>
@@ -154,20 +186,25 @@
                         <Button Grid.Column="1" Content="Usuń tło" Command="{Binding ProbaCommand}" Style="{StaticResource MainButton}" Background="#C83232" Margin="5,0,0,0"/>
                     </Grid>
 
-                    <Expander Header="Pokaż więcej opcji" Margin="0,15,0,0" FontWeight="SemiBold">
+                    <Expander Header="Pokaż więcej opcji" Margin="0,20,0,0" FontWeight="SemiBold">
                         <StackPanel Margin="0,10,0,0">
 
-                            <TextBlock Text="Producent"/>
+                            <TextBlock Text="Producent" Foreground="#4B5563" FontWeight="SemiBold" Margin="0,0,0,2"/>
                             <TextBox Text="{Binding Producer, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="35"
-                                     Margin="0,5,0,10"/>
+                                     Style="{StaticResource ModernTextBox}"
+                                     Height="75"
+                                     Margin="0,0,0,15"/>
 
-                            <TextBlock Text="Opis"/>
+                            <TextBlock Text="Opis" Foreground="#4B5563" FontWeight="SemiBold" Margin="0,0,0,2"/>
                             <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="60"
+                                     Style="{StaticResource ModernTextBox}"
+                                     VerticalContentAlignment="Top"
+                                     Height="130"
                                      AcceptsReturn="True"
                                      TextWrapping="Wrap"
-                                     Margin="0,5,0,10"/>
+                                     Margin="0,0,0,15"
+                                     Padding="8"
+                                     />
 
                         </StackPanel>
                     </Expander>

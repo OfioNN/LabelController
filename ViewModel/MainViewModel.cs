@@ -30,7 +30,7 @@ namespace LabelController.ViewModel {
         private string _producer = "XYZ \n ul.XYZ \nXYZ";
 
         [ObservableProperty]
-        private string _description = "Data minimalnej trwałości jest jednocześnie nr partii. \nNajlepiej spożyć przed:..................................... \nNależy przechowywać w temperaturze od 0 do 20 w zaciemnionym miejscu. \nPo otwarciu opakowania produkt przechowywać w lodówce, spożyć w ciągu 48 godz.";
+        private string _description = "Data minimalnej trwałości jest jednocześnie nr partii. \r\nNajlepiej spożyć przed:..................................... \r\nNależy przechowywać w temperaturze od 0°C do 20°C \r\nw zaciemnionym miejscu. \r\nPo otwarciu opakowania produkt przechowywać \r\nw lodówce, spożyć w ciągu 48 godz.";
 
         [ObservableProperty]
         private string _aiPrompt = string.Empty;
